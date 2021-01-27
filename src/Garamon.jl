@@ -1,5 +1,9 @@
 module Garamon
 
-# Write your package code here.
+using CxxWrap
+
+export mytest
+
+include("myfile.jl")
 
 end
