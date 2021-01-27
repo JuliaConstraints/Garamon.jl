@@ -3,6 +3,9 @@ uuid = "dbf15181-0796-4f0c-80cc-db9023881340"
 authors = ["Jean-François Baffier"]
 version = "0.0.1"
 
+[deps]
+CxxWrap = "1f15a43c-97ca-5a2a-ae31-89f07a497df4"
+
 [compat]
 julia = "1"
 
