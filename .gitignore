@@ -3,5 +3,7 @@
 *.jl.mem
 /docs/build/
 
+Manifest.toml
+
 _git2_*
 .gitignore
