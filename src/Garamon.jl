@@ -1,5 +1,11 @@
 module Garamon
 
-# Write your package code here.
+# SECTION - exports
+export algebra
+export basis
+export metric
+
+# SECTION - includes
+include("algebra.jl")
 
 end
