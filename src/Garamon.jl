@@ -1,8 +1,9 @@
 module Garamon
 
 # SECTION - includes
-# using LinearAlgebra
-# using SparseArray
+using Dictionaries
+using SparseArrays
+using StaticArrays
 
 # SECTION - exports
 export algebra
@@ -11,5 +12,6 @@ export metric
 
 # SECTION - includes
 include("algebra.jl")
+include("multivectors.jl")
 
 end

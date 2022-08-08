@@ -18,8 +18,6 @@ function Base.isequal(ga1::AbstractGeometricAlgebra, ga2::AbstractGeometricAlgeb
     return isequal(ga1.metric, ga2.metric) && isequal(ga1.basis, ga2.basis)
 end
 
-# NOTE - StaticArray or SparseArray for metric matrix ?
-
 struct ConformalGeometricAlgebra{T<:Number, M<:AbstractMatrix{T}} <: AbstractGeometricAlgebra
     metric::M
     basis::Vector{String}
@@ -39,11 +37,9 @@ end
 
 function algebra(space_dim::Int, ::Val{:cga})
     dim = space_dim + 2
-    metric = zeros(dim, dim)
-    metric[dim, 1] = -1.0
-    foreach(i -> metric[i, i] = 1.0, 2:dim-1)
-    metric[1, dim] = -1.0
-    return algebra(metric, :cga)
+    f = (i,j) -> 1 < i == j < dim ? 1.0 :
+    ((i, j) == (1, dim) || (i, j) == (dim, 1)) ? -1.0 : 0.0
+    return algebra(SMatrix{dim,dim}([f(i, j) for i in 1:dim, j in 1:dim]), :cga)
 end
 
 # NOTE - Should we keep it?
