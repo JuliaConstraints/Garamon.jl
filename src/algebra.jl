@@ -20,16 +20,16 @@ end
 
 # NOTE - StaticArray or SparseArray for metric matrix ?
 
-struct ConformalGeometricAlgebra{T<:Number} <: AbstractGeometricAlgebra
-    metric::Matrix{T}
+struct ConformalGeometricAlgebra{T<:Number, M<:AbstractMatrix{T}} <: AbstractGeometricAlgebra
+    metric::M
     basis::Vector{String}
 end
 
-limit_bases_indices(::Val{:cga}) = 12
+limit_bases_indices(::Val{:cga}) = 11
 
 function basis_vectors_names(metric, ::Val{:cga})
     di = delimiter_indices(metric, :cga)
-    return push!(["$di$d" for d in 0:(dimension(metric)-2)], "$(di)i")
+    return push!(["$di$d" for d in 0:(dimension(metric)-1)], "$(di)i")
 end
 
 function algebra(metric, ::Val{:cga})

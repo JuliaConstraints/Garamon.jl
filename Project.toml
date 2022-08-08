@@ -1,6 +1,6 @@
 name = "Garamon"
 uuid = "dbf15181-0796-4f0c-80cc-db9023881340"
-authors = ["Jean-François Baffier"]
+authors = ["Jean-François Baffier", "Stéphane Breuils"]
 version = "0.0.1"
 
 [compat]
