@@ -73,12 +73,37 @@ function algebra(space_dim::Int, ::Val{:pga})
     return algebra(SMatrix{dim,dim}([f(i, j) for i in 1:dim, j in 1:dim]), :pga)
 end
 
+# SECTION - Projective Geometric Algebra -- multiple
+
+limit_bases_indices(::Val{:p3ga}) = 18
+
+function basis_vectors_names(metric, ::Val{:p3ga})
+    di = delimiter_indices(metric, :p3ga)
+    inds = Vector{String}()
+    dimdiv2 = round(Int, dimension(metric) / 2)
+    for d in ["", "d"], i in 1:dimdiv2
+        push!(inds, "$d$di$i")
+    end
+    return inds
+end
+
+function algebra(metric, ::Val{:p3ga})
+    basis = basis_vectors_names(metric, :p3ga)
+    return GeometricAlgebra(metric, basis)
+end
+
+function algebra(space_dim::Int, ::Val{:p3ga})
+    dim = space_dim + 1
+    f = (i, j) -> abs(i - j) == dim ? 0.5 : 0.0
+    return algebra(SMatrix{2dim,2dim}([f(i, j) for i in 1:2dim, j in 1:2dim]), :p3ga)
+end
+
 # SECTION - Table of different GA
 const GEOMETRIC_ALGEBRAS = Dict(
     :cga => "Conformal Geometric Algebra",
     :ega => "Euclidean Geometric Algebra",
     :pga => "Projective Geometric Algebra",
+    :p3ga => "Projective Geometric Algebra - multiple basis",
 )
 
 list_geometric_algebras(list=GEOMETRIC_ALGEBRAS) = pretty_table(list)
-

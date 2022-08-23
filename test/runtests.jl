@@ -36,4 +36,15 @@ include("constants.jl")
             @test dimension(ga1) == length(basis(ga1))
         end
     end
+
+    @testset "Garamon.jl: P3GAs" begin
+        for (d, m) in P3GAs
+            ga1 = algebra(d, :p3ga)
+            ga2 = algebra(m, :p3ga)
+            @test metric(ga1) == metric(ga2)
+            @test basis(ga1) == basis(ga2)
+            @test dimension(ga1) == length(basis(ga1))
+
+        end
+    end
 end
