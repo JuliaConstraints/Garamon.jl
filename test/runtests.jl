@@ -24,4 +24,13 @@ include("constants.jl")
             @test basis(ga1) == basis(ga2)
         end
     end
+
+    @testset "Garamon.jl: PGAs" begin
+        for (d, m) in PGAs
+            ga1 = algebra(d, :pga)
+            ga2 = algebra(m, :pga)
+            @test metric(ga1) == metric(ga2)
+            @test basis(ga1) == basis(ga2)
+        end
+    end
 end

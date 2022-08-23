@@ -43,7 +43,7 @@ limit_bases_indices(::Val{:ega}) = 9
 
 function basis_vectors_names(metric, ::Val{:ega})
     di = delimiter_indices(metric, :ega)
-    return push!(["$di$d" for d in 0:(dimension(metric)-1)], "$(di)i")
+    return push!(["$di$d" for d in 1:(dimension(metric)-1)], "$(di)i")
 end
 
 function algebra(metric, ::Val{:ega})
@@ -53,10 +53,31 @@ end
 
 algebra(space_dim::Int, ::Val{:ega}) = algebra(SMatrix{space_dim,space_dim}(I(space_dim)), :ega)
 
+# SECTION - Projective Geometric Algebra
+
+limit_bases_indices(::Val{:pga}) = 10
+
+function basis_vectors_names(metric, ::Val{:pga})
+    di = delimiter_indices(metric, :pga)
+    return push!(["$di$d" for d in 0:(dimension(metric)-1)], "$(di)i")
+end
+
+function algebra(metric, ::Val{:pga})
+    basis = basis_vectors_names(metric, :pga)
+    return GeometricAlgebra(metric, basis)
+end
+
+function algebra(space_dim::Int, ::Val{:pga})
+    dim = space_dim + 1
+    f = (i, j) -> 1 < i == j ≤ dim ? 1.0 : 0.0
+    return algebra(SMatrix{dim,dim}([f(i, j) for i in 1:dim, j in 1:dim]), :pga)
+end
+
 # SECTION - Table of different GA
 const GEOMETRIC_ALGEBRAS = Dict(
     :cga => "Conformal Geometric Algebra",
     :ega => "Euclidean Geometric Algebra",
+    :pga => "Projective Geometric Algebra",
 )
 
 list_geometric_algebras(list=GEOMETRIC_ALGEBRAS) = pretty_table(list)
