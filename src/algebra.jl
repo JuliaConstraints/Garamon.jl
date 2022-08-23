@@ -23,7 +23,7 @@ limit_bases_indices(::Val{:cga}) = 11
 
 function basis_vectors_names(metric, ::Val{:cga})
     di = delimiter_indices(metric, :cga)
-    return push!(["$di$d" for d in 0:(dimension(metric)-1)], "$(di)i")
+    return push!(["$di$d" for d in 0:(dimension(metric)-2)], "$(di)i")
 end
 
 function algebra(metric, ::Val{:cga})
@@ -43,7 +43,7 @@ limit_bases_indices(::Val{:ega}) = 9
 
 function basis_vectors_names(metric, ::Val{:ega})
     di = delimiter_indices(metric, :ega)
-    return push!(["$di$d" for d in 1:(dimension(metric)-1)], "$(di)i")
+    return ["$di$d" for d in 1:dimension(metric)]
 end
 
 function algebra(metric, ::Val{:ega})
@@ -59,7 +59,7 @@ limit_bases_indices(::Val{:pga}) = 10
 
 function basis_vectors_names(metric, ::Val{:pga})
     di = delimiter_indices(metric, :pga)
-    return push!(["$di$d" for d in 0:(dimension(metric)-1)], "$(di)i")
+    return ["$di$d" for d in 0:(dimension(metric)-1)]
 end
 
 function algebra(metric, ::Val{:pga})

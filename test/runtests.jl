@@ -13,6 +13,7 @@ include("constants.jl")
             ga2 = algebra(m, :cga)
             @test metric(ga1) == metric(ga2)
             @test basis(ga1) == basis(ga2)
+            @test dimension(ga1) == length(basis(ga1))
         end
     end
 
@@ -22,6 +23,7 @@ include("constants.jl")
             ga2 = algebra(m, :ega)
             @test metric(ga1) == metric(ga2)
             @test basis(ga1) == basis(ga2)
+            @test dimension(ga1) == length(basis(ga1))
         end
     end
 
@@ -31,6 +33,7 @@ include("constants.jl")
             ga2 = algebra(m, :pga)
             @test metric(ga1) == metric(ga2)
             @test basis(ga1) == basis(ga2)
+            @test dimension(ga1) == length(basis(ga1))
         end
     end
 end

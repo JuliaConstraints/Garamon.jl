@@ -10,6 +10,7 @@ using StaticArrays
 # SECTION - exports
 export algebra
 export basis
+export dimension
 export list_geometric_algebras
 export metric
 
