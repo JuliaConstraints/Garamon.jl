@@ -2,6 +2,7 @@ module Garamon
 
 # SECTION - includes
 using Dictionaries
+using LinearAlgebra
 using PrettyTables
 using SparseArrays
 using StaticArrays

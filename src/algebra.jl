@@ -38,9 +38,25 @@ function algebra(space_dim::Int, ::Val{:cga})
     return algebra(SMatrix{dim,dim}([f(i, j) for i in 1:dim, j in 1:dim]), :cga)
 end
 
+# SECTION - Euclidean Geometric Algebra
+limit_bases_indices(::Val{:ega}) = 9
+
+function basis_vectors_names(metric, ::Val{:ega})
+    di = delimiter_indices(metric, :ega)
+    return push!(["$di$d" for d in 0:(dimension(metric)-1)], "$(di)i")
+end
+
+function algebra(metric, ::Val{:ega})
+    basis = basis_vectors_names(metric, :ega)
+    return GeometricAlgebra(metric, basis)
+end
+
+algebra(space_dim::Int, ::Val{:ega}) = algebra(SMatrix{space_dim,space_dim}(I(space_dim)), :ega)
+
 # SECTION - Table of different GA
 const GEOMETRIC_ALGEBRAS = Dict(
     :cga => "Conformal Geometric Algebra",
+    :ega => "Euclidean Geometric Algebra",
 )
 
 list_geometric_algebras(list=GEOMETRIC_ALGEBRAS) = pretty_table(list)
