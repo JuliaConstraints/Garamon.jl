@@ -20,7 +20,8 @@ include("constants.jl")
     @testset "Garamon.jl: CGAs" begin
         for (d, m) in CGAs
             ga1 = algebra(d[1], :cga; multiplicity = d[2], object_dim = d[3])
-            ga2 = algebra(m, :cga)
+            sdim = dimension(ga1) ÷ d[2]
+            ga2 = algebra(m[1:sdim, 1:sdim], :cga; multiplicity = d[2], object_dim = d[3])
             @test metric(ga1) == metric(ga2)
             @test basis(ga1) == basis(ga2)
             @test dimension(ga1) == length(basis(ga1))
