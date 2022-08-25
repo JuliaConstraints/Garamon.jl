@@ -7,20 +7,20 @@ include("constants.jl")
     @info "Print list of geometric algebras descriptors"
     list_geometric_algebras()
 
-    @testset "Garamon.jl: CGAs" begin
-        for (d, m) in CGAs
-            ga1 = algebra(d, :cga)
-            ga2 = algebra(m, :cga)
+    @testset "Garamon.jl: EGAs" begin
+        for (d, m) in EGAs
+            ga1 = algebra(d)
+            ga2 = algebra(m)
             @test metric(ga1) == metric(ga2)
             @test basis(ga1) == basis(ga2)
             @test dimension(ga1) == length(basis(ga1))
         end
     end
 
-    @testset "Garamon.jl: EGAs" begin
-        for (d, m) in EGAs
-            ga1 = algebra(d, :ega)
-            ga2 = algebra(m, :ega)
+    @testset "Garamon.jl: CGAs" begin
+        for (d, m) in CGAs
+            ga1 = algebra(d[1], :cga; multiplicity = d[2], object_dim = d[3])
+            ga2 = algebra(m, :cga)
             @test metric(ga1) == metric(ga2)
             @test basis(ga1) == basis(ga2)
             @test dimension(ga1) == length(basis(ga1))
@@ -37,10 +37,10 @@ include("constants.jl")
         end
     end
 
-    @testset "Garamon.jl: P3GAs" begin
-        for (d, m) in P3GAs
-            ga1 = algebra(d, :p3ga)
-            ga2 = algebra(m, :p3ga)
+    @testset "Garamon.jl: PSGAs" begin
+        for (d, m) in PSGAs
+            ga1 = algebra(d, :psga)
+            ga2 = algebra(m, :psga)
             @test metric(ga1) == metric(ga2)
             @test basis(ga1) == basis(ga2)
             @test dimension(ga1) == length(basis(ga1))
