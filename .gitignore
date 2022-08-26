@@ -7,3 +7,5 @@ Manifest.toml
 
 _git2_*
 .gitignore
+
+.vscode/*

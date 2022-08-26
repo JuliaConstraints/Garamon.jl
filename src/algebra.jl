@@ -1,101 +1,149 @@
 struct GeometricAlgebra{T<:Number,M<:AbstractMatrix{T}}
     metric::M
     basis::Vector{String}
+    kind::Symbol
+    multiplicity::Int
+    object_dim::Int
 end
 
 metric(ga) = ga.metric
 basis(ga) = ga.basis
+kind(ga) = ga.kind
+multiplicity(ga) = ga.multiplicity
+object_dim(ga) = ga.object_dim
 
 dimension(metric) = size(metric, 1)
-dimension(ga::GeometricAlgebra) = dimension(ga.metric)
+dimension(ga::GeometricAlgebra) = dimension(metric(ga))
 
-algebra(metric_or_dim, kind) = algebra(metric_or_dim, Val(kind))
+single_metric(m::AbstractMatrix, _) = m
+single_metric(space_dim, kind) = single_metric(space_dim, Val(kind))
+
+function multiple_metric(metric, multiplicity)
+    n = dimension(metric)
+    N = multiplicity * n
+    M = spzeros(N, N)
+    for i in 0:(multiplicity - 1), j in 1:n, k in 1:n
+        x = i * n + j
+        y = i * n + k
+        M[x, y] = metric[j, k]
+    end
+    return M
+end
+
+max_object_dim(metric, object_dim) = metric
+
+function algebra(
+    metric_or_space_dim,
+    kind = :none;
+    multiplicity = 1,
+    object_dim = 1,
+    basis = Vector{String}()
+)
+    inner_kind = kind == :none ? :ega : kind
+    metric = single_metric(metric_or_space_dim, inner_kind)
+    metric = multiple_metric(metric, multiplicity)
+    metric = max_object_dim(metric, object_dim)
+    inner_basis = if isempty(basis)
+        basis_vectors_names(metric, multiplicity, object_dim, Val(inner_kind))
+    else
+        basis
+    end
+    return GeometricAlgebra(metric, inner_basis, kind, multiplicity, object_dim)
+end
 
 limit_bases_indices(kind) = limit_bases_indices(Val(kind))
 
-delimiter_indices(metric, kind) = dimension(metric) < limit_bases_indices(kind) ? "" : "_"
-
-basis_vectors_names(metric, kind) = basis_vectors_names(metric, Val(kind))
-
-# SECTION - Conformal Geometric Algebra
-
-limit_bases_indices(::Val{:cga}) = 11
-
-function basis_vectors_names(metric, ::Val{:cga})
-    di = delimiter_indices(metric, :cga)
-    return push!(["$di$d" for d in 0:(dimension(metric)-2)], "$(di)i")
+function delimiter_indices(metric, multiplicity, object_dim, kind)
+    λ = 9 + multiplicity * limit_bases_indices(kind)
+    return dimension(metric) < λ ? "" : "_"
 end
 
-function algebra(metric, ::Val{:cga})
-    basis = basis_vectors_names(metric, :cga)
-    return GeometricAlgebra(metric, basis)
+function basis_vectors_names(ga)
+    m, μ, d = metric(ga), multiplicity(ga), object_dim(ga)
+    return basis_vectors_names(m, μ, d, Val(kind(ga)))
 end
+space_dimension(dim, ::Val) = dim
+space_dimension(ga) = space_dimension(div(dimension(ga), multiplicity(ga)), Val(kind(ga)))
 
-function algebra(space_dim::Int, ::Val{:cga})
-    dim = space_dim + 2
-    f = (i, j) -> 1 < i == j < dim ? 1.0 :
-                  ((i, j) == (1, dim) || (i, j) == (dim, 1)) ? -1.0 : 0.0
-    return algebra(SMatrix{dim,dim}([f(i, j) for i in 1:dim, j in 1:dim]), :cga)
+function descriptor(ga)
+    pre = kind(ga) == :none ? "my" : string(kind(ga))[1:end-2]
+    spd = space_dimension(ga)
+    str = "ga"
+    mul = multiplicity(ga) == 1 ? "" : string(multiplicity(ga))
+    obj = object_dim(ga) == 1 ? "" : "_$(object_dim(ga))"
+    return "$pre$spd$str$mul$obj"
 end
 
 # SECTION - Euclidean Geometric Algebra
-limit_bases_indices(::Val{:ega}) = 9
+limit_bases_indices(::Val{:ega}) = 0
 
-function basis_vectors_names(metric, ::Val{:ega})
-    di = delimiter_indices(metric, :ega)
-    return ["$di$d" for d in 1:dimension(metric)]
+function basis_vectors_names(m, μ, d, ::Val{:ega})
+    di = delimiter_indices(m, μ, d, :ega)
+    return ["$di$d" for d in 1:dimension(m)]
 end
 
-function algebra(metric, ::Val{:ega})
-    basis = basis_vectors_names(metric, :ega)
-    return GeometricAlgebra(metric, basis)
+single_metric(space_dim, ::Val{:ega}) = SMatrix{space_dim,space_dim}(I(space_dim))
+
+# SECTION - Conformal Geometric Algebra
+
+limit_bases_indices(::Val{:cga}) = 2
+
+function basis_vectors_names(m, μ, d, ::Val{:cga})
+    di = delimiter_indices(m, μ, d, :cga)
+    names = Vector{String}()
+    for i in 1:μ
+        for j in 0:(dimension(m) ÷ μ - 2)
+            d = j == 0 && μ > 1 ? string(i) : ""
+            push!(names, "$di$j$d")
+        end
+        d = μ > 1 ? string(i) : ""
+        push!(names, "i$i")
+    end
+    return names
 end
 
-algebra(space_dim::Int, ::Val{:ega}) = algebra(SMatrix{space_dim,space_dim}(I(space_dim)), :ega)
+function single_metric(space_dim, ::Val{:cga})
+    dim = space_dim + 2
+    f = (i, j) -> 1 < i == j < dim ? 1.0 :
+                  ((i, j) == (1, dim) || (i, j) == (dim, 1)) ? -1.0 : 0.0
+    return SMatrix{dim,dim}([f(i, j) for i in 1:dim, j in 1:dim])
+end
+
+space_dimension(dim, ::Val{:cga}) = dim - 2
 
 # SECTION - Projective Geometric Algebra
 
-limit_bases_indices(::Val{:pga}) = 10
+limit_bases_indices(::Val{:pga}) = 1
 
-function basis_vectors_names(metric, ::Val{:pga})
-    di = delimiter_indices(metric, :pga)
-    return ["$di$d" for d in 0:(dimension(metric)-1)]
+function basis_vectors_names(m, μ, d, ::Val{:pga})
+    di = delimiter_indices(m, μ, d, :pga)
+    return ["$di$d" for d in 0:(dimension(m)-1)]
 end
 
-function algebra(metric, ::Val{:pga})
-    basis = basis_vectors_names(metric, :pga)
-    return GeometricAlgebra(metric, basis)
-end
-
-function algebra(space_dim::Int, ::Val{:pga})
+function single_metric(space_dim, ::Val{:pga})
     dim = space_dim + 1
     f = (i, j) -> 1 < i == j ≤ dim ? 1.0 : 0.0
-    return algebra(SMatrix{dim,dim}([f(i, j) for i in 1:dim, j in 1:dim]), :pga)
+    return SMatrix{dim,dim}([f(i, j) for i in 1:dim, j in 1:dim])
 end
 
-# SECTION - Projective Geometric Algebra -- multiple
+# SECTION - Projective Space Geometric Algebra
 
-limit_bases_indices(::Val{:p3ga}) = 18
+limit_bases_indices(::Val{:psga}) = 9
 
-function basis_vectors_names(metric, ::Val{:p3ga})
-    di = delimiter_indices(metric, :p3ga)
+function basis_vectors_names(m, μ, d, ::Val{:psga})
+    di = delimiter_indices(m, μ, d, :psga)
     inds = Vector{String}()
-    dimdiv2 = round(Int, dimension(metric) / 2)
+    dimdiv2 = round(Int, dimension(m) / 2)
     for d in ["", "d"], i in 1:dimdiv2
         push!(inds, "$d$di$i")
     end
     return inds
 end
 
-function algebra(metric, ::Val{:p3ga})
-    basis = basis_vectors_names(metric, :p3ga)
-    return GeometricAlgebra(metric, basis)
-end
-
-function algebra(space_dim::Int, ::Val{:p3ga})
+function single_metric(space_dim::Int, ::Val{:psga})
     dim = space_dim + 1
     f = (i, j) -> abs(i - j) == dim ? 0.5 : 0.0
-    return algebra(SMatrix{2dim,2dim}([f(i, j) for i in 1:2dim, j in 1:2dim]), :p3ga)
+    return SMatrix{2dim,2dim}([f(i, j) for i in 1:2dim, j in 1:2dim])
 end
 
 # SECTION - Table of different GA
@@ -103,7 +151,7 @@ const GEOMETRIC_ALGEBRAS = Dict(
     :cga => "Conformal Geometric Algebra",
     :ega => "Euclidean Geometric Algebra",
     :pga => "Projective Geometric Algebra",
-    :p3ga => "Projective Geometric Algebra - multiple basis",
+    :psga => "Projective Space Geometric Algebra",
 )
 
 list_geometric_algebras(list=GEOMETRIC_ALGEBRAS) = pretty_table(list)
