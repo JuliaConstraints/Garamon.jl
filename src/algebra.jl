@@ -37,13 +37,18 @@ function algebra(
     kind = :none;
     multiplicity = 1,
     object_dim = 1,
+    basis = Vector{String}()
 )
     inner_kind = kind == :none ? :ega : kind
     metric = single_metric(metric_or_space_dim, inner_kind)
     metric = multiple_metric(metric, multiplicity)
     metric = max_object_dim(metric, object_dim)
-    basis = basis_vectors_names(metric, multiplicity, object_dim, Val(inner_kind))
-    return GeometricAlgebra(metric, basis, kind, multiplicity, object_dim)
+    inner_basis = if isempty(basis)
+        basis_vectors_names(metric, multiplicity, object_dim, Val(inner_kind))
+    else
+        basis
+    end
+    return GeometricAlgebra(metric, inner_basis, kind, multiplicity, object_dim)
 end
 
 limit_bases_indices(kind) = limit_bases_indices(Val(kind))

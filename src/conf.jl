@@ -98,3 +98,61 @@ function Base.write(
     close(io)
     return nothing
 end
+
+function descriptor(namespace::String)
+    ga = findlast("ga", namespace)
+    pre = namespace[1:(ga.start - 1)]
+    post = namespace[(ga.stop + 1):end]
+
+    m = match(r"[0-9]+", pre)
+    kind = Symbol(pre[1:(m.offset - 1)] * "ga")
+    sd = parse(Int, pre[m.offset:end])
+
+    μ = 1
+    od = 1
+    if !isempty(post)
+        sep = findlast("_", post)
+        if sep === nothing
+            μ = parse(Int, post)
+        else
+            μ = parse(Int, post[1:(sep.start - 1)])
+            od = parse(Int, post[(sep.stop + 1):end])
+        end
+    end
+
+    return kind, sd, μ, od
+end
+
+function algebra(conf_path::String)
+    file = open(conf_path, "r")
+    fields = Dict{String, String}()
+
+    while !eof(file)
+        readuntil(file, '<')
+        field = readuntil(file, '>')
+        content = strip(readuntil(file, "</$field>"), ['\n',' ', '\t'])
+        push!(fields, field => content)
+    end
+
+    close(file)
+
+    kind, sd, μ, od = descriptor(fields["namespace"])
+    basis = string.(split(fields["basis vector name"]))
+
+    if haskey(fields, "metric")
+        metric = readdlm(IOBuffer(fields["metric"]))
+        return algebra(
+            metric, kind;
+            multiplicity = μ,
+            basis,
+            object_dim = od,
+        )
+    else
+        return algebra(
+            sd, kind;
+            multiplicity = μ,
+            basis,
+            object_dim = od,
+        )
+    end
+end
